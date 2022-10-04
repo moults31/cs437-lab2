@@ -4,7 +4,8 @@
   "description": "A minimal Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "rebuild": "electron-rebuild"
   },
   "repository": {
     "type": "git",
@@ -20,10 +21,16 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^21.0.1"
+    "electron": "^21.0.1",
+    "electron-rebuild": "^3.2.9"
   },
   "bugs": {
     "url": "https://github.com/electron/electron-quick-start/issues"
   },
-  "homepage": "https://github.com/electron/electron-quick-start#readme"
+  "homepage": "https://github.com/electron/electron-quick-start#readme",
+  "dependencies": {
+    "@episensor/bluetooth-hci-socket": "^0.5.3-7",
+    "bluetooth-serial-port": "^3.0.0",
+    "node-gyp": "^9.1.0"
+  }
 }

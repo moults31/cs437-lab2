@@ -20,25 +20,29 @@ function createWindow () {
     app.commandLine.appendSwitch("enable-web-bluetooth", true);
   }
 
-  // Adapted from https://www.electronjs.org/docs/latest/tutorial/devices
-  mainWindow.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
-    event.preventDefault()
-    if (deviceList && deviceList.length > 0) {
-      callback(deviceList[0].deviceId)
-    } 
+  app.whenReady(() => {
+    app.allowRendererProcessReuse = false
   })
 
-  // Listen for a message from the renderer to get the response for the Bluetooth pairing.
-  ipcMain.on('bluetooth-pairing-response', (event, response) => {
-    bluetoothPinCallback(response)
-  })
+  // // Adapted from https://www.electronjs.org/docs/latest/tutorial/devices
+  // mainWindow.webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
+  //   event.preventDefault()
+  //   if (deviceList && deviceList.length > 0) {
+  //     callback(deviceList[0].deviceId)
+  //   } 
+  // })
 
-  mainWindow.webContents.session.setBluetoothPairingHandler((details, callback) => {
+  // // Listen for a message from the renderer to get the response for the Bluetooth pairing.
+  // ipcMain.on('bluetooth-pairing-response', (event, response) => {
+  //   bluetoothPinCallback(response)
+  // })
 
-    bluetoothPinCallback = callback
-    // Send a message to the renderer to prompt the user to confirm the pairing.
-    mainWindow.webContents.send('bluetooth-pairing-request', details)
-  })  
+  // mainWindow.webContents.session.setBluetoothPairingHandler((details, callback) => {
+
+  //   bluetoothPinCallback = callback
+  //   // Send a message to the renderer to prompt the user to confirm the pairing.
+  //   mainWindow.webContents.send('bluetooth-pairing-request', details)
+  // })  
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
