@@ -1,24 +1,27 @@
 import sys
 import bluetooth
 import threading
+import socket
+import time
+import random
+import string
 
-uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
+if socket.gethostname() != 'raspberrypi':
+    address = "E4:5F:01:A3:C7:9C"
+    client_port = 1
+    server_port = 2
+else:
+    address = "38:00:25:EB:49:4C"
+    client_port = 2
+    server_port = 1
 
 def start_server():
     server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    server_sock.bind(("", bluetooth.PORT_ANY))
+    server_sock.bind(("", server_port))
+    # server_sock.bind(("", bluetooth.PORT_ANY))
     server_sock.listen(1)
 
-    port = server_sock.getsockname()[1]
-
-
-    bluetooth.advertise_service(server_sock, "SampleServer", service_id=uuid,
-                                service_classes=[uuid, bluetooth.SERIAL_PORT_CLASS],
-                                profiles=[bluetooth.SERIAL_PORT_PROFILE],
-                                # protocols=[bluetooth.OBEX_UUID]
-                                )
-
-    print("Waiting for connection on RFCOMM channel", port)
+    print("Waiting for connection on RFCOMM channel", server_port)
     client_sock, client_info = server_sock.accept()
     print("Accepted connection from", client_info)
 
@@ -38,27 +41,28 @@ def start_server():
     print("All done.")
 
 def start_client():
-    print("Starting Client...")
-    service_matches = bluetooth.find_service(uuid=uuid, address=None)
-
-    if len(service_matches) == 0:
-        print("Couldn't find the SampleServer service.")
-        sys.exit(0)
-
-    first_match = service_matches[0]
-    port = first_match["port"]
-    name = first_match["name"]
-    host = first_match["host"]        
-
-    print("Connecting to \"{}\" on {}".format(name, host))
+    print("Connecting to \"{}\" on port {}".format(address, client_port))
 
     # Create the client socket
-    sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    sock.connect((host, port))
+    sock = None
+    did_connect = False
+    num_retries = 0
+
+    while (not did_connect) and (num_retries < 10):
+        try:
+            sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+            sock.connect((address, client_port))
+            did_connect = True
+        except bluetooth.btcommon.BluetoothError:
+            num_retries = num_retries + 1
+        time.sleep(1)
+
+    if not did_connect:
+        raise Exception("Client exceeded number of allowed connection retries ")
 
     print("Connected. Type something...")
     while True:
-        data = input()
+        data = random.choice(string.ascii_letters)
         if not data:
             break
         sock.send(data)
@@ -66,6 +70,7 @@ def start_client():
         if data == "q":
             break
 
+        time.sleep(2)
     sock.close()
 
 sth = threading.Thread(target=start_server)
