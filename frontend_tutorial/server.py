@@ -16,7 +16,8 @@ import picar_4wd as fc
 uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
 
 # IP address and port (update as needed)
-HOST = "192.168.1.133" # IP address of your Raspberry PI
+#HOST = "192.168.1.133" # IP address of your Raspberry PI
+HOST = "192.168.1.221"
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
 
 # Define enum for holding driving direction, in relation to the initial driving direction when the 
@@ -52,6 +53,9 @@ bt_car_controls = {
     's': 'backward',
     'd': 'right',
 }
+
+# Set global timer for calculating distance
+timer = time.time()
 
 # Signal to synchronize quitting with multi threads and other host
 should_quit = False
@@ -122,6 +126,10 @@ def car_control(action):
 
 # Execute turn of car
 def turn(turning_direction):
+    global is_car_moving
+    if is_car_moving :
+        updateDistance()
+        is_car_moving = False
     
     # Set time for turning action for a period in seconds which gives a 90 degree turn angle.
     # Different timers needed for left and right turns to maintain consistent turning angle
@@ -145,35 +153,48 @@ def turn(turning_direction):
 
 # Move car forward and update distance counter each time function is called
 def move_forward():
-    timer = 1 # 1 second
-    global distance
     global is_car_moving
+    if is_car_moving :
+        updateDistance()
+    #Reset timer
+    timer = time.time()
     is_car_moving = True
     fc.forward(speed)
-    time.sleep(timer)
-    fc.stop()
-    is_car_moving = False
-    distance = distance + (speed * timer)
     return
 
 # Move car backward and update distance counter each time function is called
 def move_backward():
-    timer = 1
-    global distance
     global is_car_moving
+    if is_car_moving:
+        updateDistance()
+    #Reset timer
+    timer = time.time()
     is_car_moving = True
     fc.backward(speed)
-    time.sleep(timer)
-    fc.stop()
-    is_car_moving = False
-    distance = distance + (speed * timer)
     return
+
+def stop():
+    global is_car_moving
+    if is_car_moving:
+        updateDistance()
+        is_car_moving = False
+    fc.stop()
+    return
+
+
+def updateDistance() :
+    global distance
+    currentTime = time.time()
+    movedTime = currentTime - timer
+    print("Moved time " + str(movedTime))
+    distance = distance + round((speed * movedTime))
+    return
+
 
 # Prepare parameters to be sent to the client
 def prepare_parameters():
     global is_car_moving
     global speed
-
 
     # Initiate parameter dictionary with the parameters from the utils function
     parameters = fc.utils.pi_read()
@@ -181,7 +202,7 @@ def prepare_parameters():
     parameters["direction"] =  str(DrivingDirection(direction).name)
     print("Is car moving " + str(is_car_moving))
     if (is_car_moving) :
-        print("Car is moving and speed is " + speed)
+        print("Car is moving and speed is " + str(speed))
         parameters["speed"] = speed
     else :
         parameters["speed"] = 0
