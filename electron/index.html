@@ -1,60 +1,148 @@
 ﻿<!DOCTYPE html>
 <html>
 <script src="index.js"></script>
-  <head style='height:60px'>
+  <head style='height:60px;'>
     <meta charset="UTF-8">
-    <div style='background:black; height: 50px'>
-    <h1 style='background:black; color: white; padding-top: 6px'>&nbsp;&nbsp;&nbsp;Control the car from here!</h1>
+    <style>
+      span{
+        color:#ABF3C8;  
+        font-family: "Lucida Console", "Courier New", monospace;
+      }
+    .box{
+      text-align: center; 
+      border-style: solid;
+      float: left;
+      border-color:#ABF3C8;
+      border-radius: 8%;
+      width:13%;
+      height:100%;
+      background-image:linear-gradient(180deg, rgba(102,156,147,1), rgba(171,243,200,0));
+      }
+      p{
+        color:#ABF3C8;
+        text-align: center;
+        font-size: 85%; 
+        font-family: "Lucida Console", "Courier New", monospace;
+      }
+      button{
+        font-size:45px;
+        color:#4CEAF0;
+        border-color:#3EC0D0;
+      }
+      .upArrow{
+        background-image: linear-gradient(180deg, rgba(62,115,132,1), rgba(71,137,156,1));
+      }
+      .leftArrow{
+        background-image:linear-gradient(90deg, rgba(62,115,132,1), rgba(71,137,156,1));
+      }
+      .stopButton{
+        font-size: 25px; 
+        background-image:linear-gradient(180deg, rgba(62,115,132,1), rgba(71,137,156,1));
+      }
+      .rightArrow{
+        background-image:linear-gradient(270deg, rgba(62,115,132,1), rgba(71,137,156,1));
+      }
+      .downArrow{
+        background-image:linear-gradient(0deg, rgba(62,115,132,1), rgba(71,137,156,1));
+      }
+    
+      button:active{
+        background-image: linear-gradient(180deg, rgba(78,176,192,1),rgba(75,161,178,1));
+      }
+
+    </style>
+    <div  class=header style=" height:120px; ">
+
+      <div  style=" float:left;  width:80%">
+    <h1 style=' color:#4ABAE3; font-family: "Lucida Console", "Courier New", monospace;
+    padding-top: 6px'>&nbsp;&nbsp;&nbsp;Picar Dashboard</h1>
+    <h3 style=' color:#45CFE9; font-family: "Lucida Console", "Courier New", monospace;
+    padding-left:25px'>&nbsp;&nbsp;&nbsp;Press the arrows to control the car</h3>
     </div>
+
+    <div style=" float:right"><img style='padding-top: 20px; height: 75px; width:auto; margin-right:20px' src="fuel4.png"></div>
+    </div>
+    
     
 </head>
 
-<body>  
-    <div class="container" style='padding-top: 40px; height: 400px; margin-top: 15px; background-color: lightgray;'>
+<body style="background-image: url('Car1.png'); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">  
 
-        <div class="col" style='width:30%; float: left; background: lightgray'>
-           <div class="row1" style=' text-align: center; padding-top: 20px;'>
-            <button id="upArrow" type="button" style='font-size:45px;background: white ' onclick="move('forward')">&#8679;</buttons> 
+    <div class="row" style=' height: 70px; margin-left:3%; width:95%;'>
+
+      <div class="box">
+        <p>
+        Car direction:</p>
+        <span id="direction">Right</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+        <p style='color:#ABF3C8; text-align: center; font-size: 85%;  font-family: "Lucida Console", "Courier New", monospace;'>
+        Battery:</p>
+        <span id="battery" style='color:#ABF3C8; font-family: "Lucida Console", "Courier New", monospace;'>5%</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+      <p style='color:#ABF3C8; text-align: center; font-size: 85%;  font-family: "Lucida Console", "Courier New", monospace;'>
+        Speed:</p>
+        <span id="speed" style='color:#ABF3C8; font-family: "Lucida Console", "Courier New", monospace;'>5 mph</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+      <p style='color:#ABF3C8; text-align: center; font-size: 85%; font-family: "Lucida Console", "Courier New", monospace;'>
+        CPU Temp:</p>
+        <span id="CPU_temp" style='color:#ABF3C8; font-family: "Lucida Console", "Courier New", monospace;'>33 degrees</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+        <p style='color:#ABF3C8; text-align: center; font-size: 85%; font-family: "Lucida Console", "Courier New", monospace;'>
+        Pi Temp:</p>
+        <span id="PI_temperature" style='color:#ABF3C8; font-family: "Lucida Console", "Courier New", monospace;'>34 degrees</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+        <p style=' font-family: "Lucida Console", "Courier New", monospace;'>
+        CPU Usage:</p>
+        <span id="usage" style='color:#ABF3C8; font-family: "Lucida Console", "Courier New", monospace;'>3%</span>
+      </div>
+
+      <div class="box" style="margin-left: 1%;">
+      <p style='color:#ABF3C8; text-align: center;font-size: 85%;  font-family: "Lucida Console", "Courier New", monospace;'>
+        RAM:</p>
+        <span id="ram" style='color:#ABF3C8;font-family: "Lucida Console", "Courier New", monospace;'>234,3242,234</span>
+      </div>
+
+    </div>
+    
+
+
+        <div class="col" style='width:400px; border-style: solid; background-image: linear-gradient(180deg, rgba(71,137,156,1), rgba(78,176,192,0));
+        border-width: 2px; border-color:#3EC0D0; border-radius: 8%; height: 280px; margin-top: 8%; margin-left:10%; float: left; '>
+
+
+
+
+
+           <div class="row1" style=' text-align: center; padding-top: 20px; '>
+            <button class="upArrow" type="button")' onclick="move('forward')">&#8679;</buttons> 
             </div>
-            
             <br>
-            <div class="row" style=' height: 40px; '>
-                <div class="colm" style=' width:30%; margin-left: 0; float:left; text-align: right; '>
-            <button id="leftArrow" type="button" onclick="move('left')" 
-             style='font-size:45px; background: white '>&#8678;</button></div>
+            <div class="row" style=' height: 40px;'>
+            <div class="colm" style=' width:30%; margin-left: 0; float:left; text-align: right; '>
+            <button class="leftArrow" type="button" onclick="move('left')">&#8678;</button></div>
             <div class="colm" style='  width:30%; margin-left: 5%;float:left; text-align: center; padding-top: 17px; '>
-            <button id="back"  type="button" onclick="move('stop')" 
-            style='font-size: 25px; background: white '>Stop</button></div>
+            <button class="stopButton"  type="button" onclick="move('stop')">Stop</button></div>
             <div class="colm" style=' width:30%; margin-left: 69%;  text-align: left; '>
-            <button id="rightArrow" type="button" onclick="move('right')"
-             style='font-size:45px; background: white  ''>&#8680;</button></div>
+            <button class="rightArrow" type="button" onclick="move('right')">&#8680;</button></div>
             </div>
             <br>
             <br>
             <div class="row2" style=' text-align: center; '>
-            <button id="downArrow"  type="button" onclick="move('backward')" style='font-size:45px; background: white '>&#8681;</buttons>
+            <button class="downArrow"  type="button" onclick="move('backward')">&#8681;</buttons>
             </div>
         </div>
 
-        <div class="col" style='margin-left: 40%; padding-top: 30px;'>
-
-          <table style='font-family: arial, sans-serif; width: 70%'>
-           <tr><td>Car Direction:</td><td><span id="direction"></span></td></tr>
-           <tr><td>Battery: </td><td><span id="battery"></span>  </td></tr>
-           <tr><td>Speed:</td><td><span id="speed"></span>  </td></tr>
-           <tr><td>Temperature of CPU:</td><td><span id="CPU_temp"></span></td></tr>
-           <tr><td>CPU Usage:</td><td><span id="usage"></span>  </td></tr>
-           <tr><td>Ram:</td><td> <span id="ram"></span></td></tr>
-           <tr><td>Temperature of the Pi: </td><td><span id="PI_temperature"></span></td></tr>
-          </table>
-          
-           
-        </div>
-    </div>
-
-    <center><h1>Raspberry Pi - Surveillance Camera</h1></center>
-    <center><img src="stream.mjpg" width="640" height="480"></center>
+       
   </body>
 </html>
-
 
