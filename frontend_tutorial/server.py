@@ -1,12 +1,12 @@
 import socket
 import sys
-from enum import Enum
 import time
 import json
 import threading
-from threading import Thread
 import cv2
 import bluetooth
+from threading import Thread
+from enum import Enum
 
 #Needed to find picar_4wd module
 sys.path.insert(0, '/home/pi/picar-4wd/')
@@ -16,7 +16,7 @@ import picar_4wd as fc
 uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
 
 # IP address and port (update as needed)
-HOST = "192.168.1.221" # IP address of your Raspberry PI
+HOST = "192.168.1.133" # IP address of your Raspberry PI
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
 
 # Define enum for holding driving direction, in relation to the initial driving direction when the 
@@ -45,9 +45,16 @@ camera_on = False
 # Use bluetooth variable. When 'true' server connects via bluetooth, otherwise wifi is used
 use_bluetooth = False
 
-# Bluetooth client MAC address
-bluetoothMAC = ""
+# Keyboard control mapping from keys to directions
+bt_car_controls = {
+    'w': 'forward',
+    'a': 'left',
+    's': 'backward',
+    'd': 'right',
+}
 
+# Signal to synchronize quitting with multi threads and other host
+should_quit = False
 
 # Update direction in relation to the initial driving direction of the car
 def updateDirection(turn):
@@ -197,6 +204,7 @@ def get_camera_image(cap) :
 
 # Initiate bluetooth server
 def start_server():
+    global should_quit
     print("Starting bluetooth server")
     server_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
     server_sock.bind(("", bluetooth.PORT_ANY))
@@ -216,18 +224,25 @@ def start_server():
 
 
     try:
-
         # Open persistence while loop checking for data from the client
-        while True:
+        while not should_quit:
             data = client_sock.recv(1024)
-            if not data or data.decode('UTF-8') == "q":
+            if not data:
+                print("Received empty buffer. Server exiting.")
+                break
+            if data.decode('UTF-8') == "q":
+                print("Received q. Setting stop signal.")
+                should_quit = True
                 break
 
             print("Received data via bluetooth", data)
-            action = data.decode("UTF-8") 
+            car_control_char = data.decode("UTF-8") 
 
             # Take relevant action received from client
-            if action :
+            if car_control_char:
+                action = ''
+                if car_control_char in bt_car_controls.keys():
+                    action = bt_car_controls[car_control_char]
                     car_control(action)
             client_sock.send("Done")
             
@@ -240,52 +255,23 @@ def start_server():
     server_sock.close()
     print("All done.")
 
-def alternative_client():
-    target_name = "raspberrypi"
-    target_address = None
-
-    nearby_devices = bluetooth.discover_devices()
-
-    for bdaddr in nearby_devices:
-        print(bluetooth.lookup_name( bdaddr ))
-        if target_name == bluetooth.lookup_name( bdaddr ):
-            target_address = bdaddr
-            break
-
-    if target_address is not None:
-        print ("found target bluetooth device with address ", target_address)
-    else:
-        print ("could not find target bluetooth device nearby")
-        return
-
-    x = {
-    "name": "John",
-    "age": 30,
-    "city": "New York"
-    }
-
-    # convert into JSON:
-    y = json.dumps(x)
-
-    port = 1
-
-    sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-    sock.connect((target_address, port))
-
-    sock.send(y)
-
-    sock.close()                
-
 # Start bluetooth client for sending data to front end
 def start_client():
-
+    global should_quit
     print("Starting bluetooth Client...")
-    service_matches = bluetooth.find_service(uuid=uuid, address=None)
+    did_connect = False
+    num_retries = 0
+    while (not did_connect) and (num_retries < 10):
+        print("Client connection attempt number {}...".format(num_retries))
+        service_matches = bluetooth.find_service(uuid=uuid, address=None)
+        num_retries += 1
+        if len(service_matches) != 0:
+            did_connect = True
+        time.sleep(0.1)
 
-    if len(service_matches) == 0:
-        print (service_matches)
-        print("Couldn't find the SampleServer service.")
-        sys.exit(0)
+    if not did_connect:
+            print("Couldn't find the SampleServer service.")
+            sys.exit(0)
 
     first_match = service_matches[0]
     port = first_match["port"]
@@ -301,8 +287,7 @@ def start_client():
     print("Connected. Sending regular updates")
 
     # Start persistent loop which sends parameter data to the client
-    while True:
-
+    while not should_quit:
         # Prepare parameter update for client
         parametersJson = prepare_parameters()
 
@@ -319,9 +304,6 @@ def start_client():
         print(" Sending data via bluetooth")
         sock.send(response)
 
-        if response == "q":
-            break
-
         time.sleep(10)
 
     sock.close()
@@ -337,10 +319,8 @@ if __name__ == "__main__":
 
     # If bluetooth selected then intiate server and client functions in respective threads
     if use_bluetooth :
-
         sth = threading.Thread(target=start_server)
         cth = threading.Thread(target=start_client)
-        #cth = threading.Thread(target=alternative_client)
 
         sth.start()
         cth.start()
