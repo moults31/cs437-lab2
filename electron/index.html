@@ -1,72 +1,60 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
+<script src="index.js"></script>
+  <head style='height:60px'>
     <meta charset="UTF-8">
-    <style>
-      .container{
-                  display: flex;
-                }
-    </style>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script src="./index.js"></script>
+    <div style='background:black; height: 50px'>
+    <h1 style='background:black; color: white; padding-top: 6px'>&nbsp;&nbsp;&nbsp;Control the car from here!</h1>
+    </div>
     
-  </head>
+</head>
 
-  <body>
-    <div class="container">
-  
-      <div class="jumbotron">
-      <h2>CS498: IoT -- Lab 2</h2>
+<body>  
+    <div class="container" style='padding-top: 40px; height: 400px; margin-top: 15px; background-color: lightgray;'>
 
-      <!-- <video class="center" width="600" height="400" controls>
-        <source src="samplevid.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-      </video> -->
-      <img src="./media/default_background.png" id='pics'>
-    </div> 
-  
-  </div>
-
-  <div class="row">
-    <div class="container">
-        <div class="jumbotron text-center col-md-6">
-            <span>&nbsp;&nbsp;</span> 
-            <span id="upArrow" style='font-size:50px; color:grey;'>&#8679;</span>
+        <div class="col" style='width:30%; float: left; background: lightgray'>
+           <div class="row1" style=' text-align: center; padding-top: 20px;'>
+            <button id="upArrow" type="button" style='font-size:45px;background: white ' onclick="move('forward')">&#8679;</buttons> 
+            </div>
+            
             <br>
-            <span id="leftArrow" style='font-size:45px; color:grey;'>&#8678;</span>
-            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> 
-            <span id="rightArrow" style='font-size:45px; color:grey;'>&#8680;</span>
+            <div class="row" style=' height: 40px; '>
+                <div class="colm" style=' width:30%; margin-left: 0; float:left; text-align: right; '>
+            <button id="leftArrow" type="button" onclick="move('left')" 
+             style='font-size:45px; background: white '>&#8678;</button></div>
+            <div class="colm" style='  width:30%; margin-left: 5%;float:left; text-align: center; padding-top: 17px; '>
+            <button id="back"  type="button" onclick="move('stop')" 
+            style='font-size: 25px; background: white '>Stop</button></div>
+            <div class="colm" style=' width:30%; margin-left: 69%;  text-align: left; '>
+            <button id="rightArrow" type="button" onclick="move('right')"
+             style='font-size:45px; background: white  ''>&#8680;</button></div>
+            </div>
             <br>
-            <span>&nbsp;&nbsp;</span> 
-            <span id="downArrow" style='font-size:50px; color:grey;'>&#8681;</span>
+            <br>
+            <div class="row2" style=' text-align: center; '>
+            <button id="downArrow"  type="button" onclick="move('backward')" style='font-size:45px; background: white '>&#8681;</buttons>
+            </div>
         </div>
 
-        <div class="jumbotron text-left col-md-6">
-        <input id="message" type="text" placeholder="message to Pi"/>
-        <button class="btn btn-success" onclick="update_data()">Sumbit</button>
-          <p>
-            <span id="direction_dot" style="color:Green">&bull;</span> Car Direction: <span id="direction"> </span>
-           <br>
-           <span id="speed_dot" style="color:green">&bull;</span> Speed: <span id="speed">0.0</span>  
-           <br>
-           <span id="distance_dot" style="color:green">&bull;</span> Distance Traveled: <span id="distance">0.0</span>
-           <br>
-           <span id="temprature_dot" style="color:green">&bull;</span> Temperature of the Pi: <span id="temperature">0.0</span>
-           <br>
-           Bluetooth return value: <span id="bluetooth"> </span>
-          </p>  
+        <div class="col" style='margin-left: 40%; padding-top: 30px;'>
+
+          <table style='font-family: arial, sans-serif; width: 70%'>
+           <tr><td>Car Direction:</td><td><span id="direction"></span></td></tr>
+           <tr><td>Battery: </td><td><span id="battery"></span>  </td></tr>
+           <tr><td>Speed:</td><td><span id="speed"></span>  </td></tr>
+           <tr><td>Temperature of CPU:</td><td><span id="CPU_temp"></span></td></tr>
+           <tr><td>CPU Usage:</td><td><span id="usage"></span>  </td></tr>
+           <tr><td>Ram:</td><td> <span id="ram"></span></td></tr>
+           <tr><td>Temperature of the Pi: </td><td><span id="PI_temperature"></span></td></tr>
+          </table>
+          
+           
         </div>
-        <div class="jumbotron text-left col-md-6">
-          <button id="clickme">Test Bluetooth</button>
+    </div>
 
-          <p>Currently selected bluetooth device: <strong id="device-name""></strong></p>
-
-          <script src="./renderer.js"></script>
-      </div>
-  </div>
-</div>
-
+    <center><h1>Raspberry Pi - Surveillance Camera</h1></center>
+    <center><img src="stream.mjpg" width="640" height="480"></center>
   </body>
 </html>
+
 
