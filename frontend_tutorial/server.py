@@ -8,16 +8,22 @@ import bluetooth
 from threading import Thread
 from enum import Enum
 
-#Needed to find picar_4wd module
+# Needed to find picar_4wd module
 sys.path.insert(0, '/home/pi/picar-4wd/')
 import picar_4wd as fc
+
+
+####################################################################
+#  
+#           Parameter initialisation
+#
+####################################################################
 
 # Bluetooth Universally Unique ID to identify Bluetooth service
 uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
 
 # IP address and port (update as needed)
-#HOST = "192.168.1.133" # IP address of your Raspberry PI
-HOST = "192.168.1.221"
+HOST = "192.168.1.221" # IP address of your Raspberry PI
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
 
 # Define enum for holding driving direction, in relation to the initial driving direction when the 
@@ -28,6 +34,9 @@ class DrivingDirection (Enum):
     left = 3
     backwards = 4
 
+# Set starting direction of car as toward destination
+direction = DrivingDirection.forwards
+
 # Set speed of car
 speed = 20
 
@@ -36,9 +45,6 @@ distance = 0
 
 # Car moving status, so we know when distance updates are needed
 is_car_moving = False
-
-# Set starting direction of car as toward destination
-direction = DrivingDirection.forwards
 
 # Use bluetooth variable. When 'true' server connects via bluetooth, otherwise wifi is used
 use_bluetooth = True
@@ -59,43 +65,11 @@ timer = time.time()
 should_quit = False
 
 
-# Update direction in relation to the initial driving direction of the car
-def updateDirection(turn):
-
-    # Use global variable
-    global direction
-
-    # Update direction depending on current direction and turning direction
-    if direction == DrivingDirection.forwards:
-
-        if turn == 'left':
-            direction = DrivingDirection.left
-        else :
-            direction = DrivingDirection.right
-
-    elif direction == DrivingDirection.right:
-
-        if turn == 'left':
-            direction = DrivingDirection.forwards
-        else :
-            direction = DrivingDirection.backwards
-
-    elif direction == DrivingDirection.left:
-
-        if turn == 'left':
-            direction = DrivingDirection.backwards
-        else :
-            direction = DrivingDirection.forwards
-
-    elif direction == DrivingDirection.backwards:
-
-        if turn == 'left':
-            direction = DrivingDirection.right
-        else :
-            direction = DrivingDirection.left
-
-    else:
-        return 
+####################################################################
+#  
+#           Car actions
+#
+####################################################################
 
 # Act on the requested action received from the client
 def car_control(action):
@@ -185,14 +159,59 @@ def stop():
 def updateDistance() :
     global distance
     global timer
+    
+    # Moved time calculated 
     currentTime = time.time()
     movedTime = currentTime - timer
-    print("Current time " + str(currentTime))
-    print(" Start timer " + str(timer))
-    print("Moved time " + str(movedTime))
+
+    # Distance estimated
     distance = distance + round((speed * movedTime))
     return
 
+# Update direction in relation to the initial driving direction of the car
+def updateDirection(turn):
+
+    # Use global variable
+    global direction
+
+    # Update direction depending on current direction and turning direction
+    if direction == DrivingDirection.forwards:
+
+        if turn == 'left':
+            direction = DrivingDirection.left
+        else :
+            direction = DrivingDirection.right
+
+    elif direction == DrivingDirection.right:
+
+        if turn == 'left':
+            direction = DrivingDirection.forwards
+        else :
+            direction = DrivingDirection.backwards
+
+    elif direction == DrivingDirection.left:
+
+        if turn == 'left':
+            direction = DrivingDirection.backwards
+        else :
+            direction = DrivingDirection.forwards
+
+    elif direction == DrivingDirection.backwards:
+
+        if turn == 'left':
+            direction = DrivingDirection.right
+        else :
+            direction = DrivingDirection.left
+
+    else:
+        return 
+
+
+####################################################################
+#  
+#           Parameter preparation
+#
+####################################################################
 
 # Prepare parameters to be sent to the client
 def prepare_parameters():
@@ -209,22 +228,16 @@ def prepare_parameters():
         parameters["speed"] = speed
     else :
         parameters["speed"] = 0
-
-    #If camera connection is running
-    #if cap.isOpened :
-     #   image = get_camera_image(cap)
-      #  print("Image retreived")
-        #cv2.imshow('Image', image)
-
-        #To do - add image to parameter dictionary
                         
     parameters["distance"] = distance
     return json.dumps(parameters)
 
-def get_camera_image(cap) :
-    success, image = cap.read()
-    print(type(image))
-    return image
+
+####################################################################
+#  
+#           Bluetooth communication
+#
+####################################################################
 
 # Initiate bluetooth server
 def start_server():
@@ -332,6 +345,12 @@ def start_client():
     sock.close()
 
 
+####################################################################
+#  
+#          Main program
+#
+####################################################################
+
 if __name__ == "__main__":
 
     # If bluetooth selected then intiate server and client functions in respective threads
@@ -356,16 +375,15 @@ if __name__ == "__main__":
                     client, clientInfo = s.accept()
                     print("server recv from: ", clientInfo)
                     data = client.recv(1024)      # receive 1024 Bytes of message in binary format
-                    print("Trying to control car")
+                    
+                    # Action receiced from client (ie forward, left, right, backward or stop)
                     action = data.decode("utf-8") 
-                    print(action)
+
                     if action :
                         car_control(action)
                     
                     # Prepare parameter update for client
                     parametersJson = prepare_parameters()
-
-                    print("Parameters " + parametersJson)
 
                     # Bytes object required for sending to client
                     response = bytes(parametersJson, "UTF-8")
@@ -376,8 +394,6 @@ if __name__ == "__main__":
                 print(e)
                 
             finally :
-                print("Closing socket")
                 client.close()
                 s.close()
-                print ("Socket closed")
 
