@@ -102,7 +102,7 @@ def updateDirection(turn):
 def car_control(action):
     global speed
 
-    # Threading used so input is not blocked while car is moving
+    # Threading used so input is not blocked while car action is being taken
     action_thread = Thread()
 
     # Give the thread the respective target function based on requested action
@@ -115,7 +115,8 @@ def car_control(action):
     elif action=='right':
         action_thread = Thread(target=turn, args=(action,))
     else:
-        fc.stop()
+        stop()
+        return
 
     # Start thread with relevant function
     action_thread.start()
@@ -154,9 +155,9 @@ def turn(turning_direction):
 # Move car forward and update distance counter each time function is called
 def move_forward():
     global is_car_moving
+    global timer
     if is_car_moving :
         updateDistance()
-    #Reset timer
     timer = time.time()
     is_car_moving = True
     fc.forward(speed)
@@ -165,9 +166,9 @@ def move_forward():
 # Move car backward and update distance counter each time function is called
 def move_backward():
     global is_car_moving
+    global timer
     if is_car_moving:
         updateDistance()
-    #Reset timer
     timer = time.time()
     is_car_moving = True
     fc.backward(speed)
@@ -184,8 +185,11 @@ def stop():
 
 def updateDistance() :
     global distance
+    global timer
     currentTime = time.time()
     movedTime = currentTime - timer
+    print("Current time " + str(currentTime))
+    print(" Start timer " + str(timer))
     print("Moved time " + str(movedTime))
     distance = distance + round((speed * movedTime))
     return
@@ -360,9 +364,6 @@ if __name__ == "__main__":
                     client, clientInfo = s.accept()
                     print("server recv from: ", clientInfo)
                     data = client.recv(1024)      # receive 1024 Bytes of message in binary format
-                    #if data != b"":
-                    #    print(data)  
-                    #    client.sendall(data) # Echo back to client
                     print("Trying to control car")
                     action = data.decode("utf-8") 
                     print(action)
