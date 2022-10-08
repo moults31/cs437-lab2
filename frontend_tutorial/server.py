@@ -34,31 +34,30 @@ speed = 20
 # Initialise distance counter, measured in number of seconds of travel * speed (approximately cms)
 distance = 0
 
-# Car moving status
+# Car moving status, so we know when distance updates are needed
 is_car_moving = False
 
 # Set starting direction of car as toward destination
 direction = DrivingDirection.forwards
 
-#Using camera vaiable - so can be removed if needed eg. for bluetooth communication
-camera_on = False
-
 # Use bluetooth variable. When 'true' server connects via bluetooth, otherwise wifi is used
-use_bluetooth = False
+use_bluetooth = True
 
-# Keyboard control mapping from keys to directions
+# Keyboard control mapping from keys to directions (when using bluetooth)
 bt_car_controls = {
     'w': 'forward',
     'a': 'left',
     's': 'backward',
     'd': 'right',
+    'x': 'stop',
 }
 
-# Set global timer for calculating distance
+# Set timer for calculating distance
 timer = time.time()
 
 # Signal to synchronize quitting with multi threads and other host
 should_quit = False
+
 
 # Update direction in relation to the initial driving direction of the car
 def updateDirection(turn):
@@ -240,13 +239,11 @@ def start_server():
     bluetooth.advertise_service(server_sock, "CarServer", service_id=uuid,
                                 service_classes=[uuid, bluetooth.SERIAL_PORT_CLASS],
                                 profiles=[bluetooth.SERIAL_PORT_PROFILE],
-                                # protocols=[bluetooth.OBEX_UUID]
                                 )
 
     print("Waiting for connection on RFCOMM channel", port)
     client_sock, client_info = server_sock.accept()
     print("Accepted connection from", client_info)
-
 
     try:
         # Open persistence while loop checking for data from the client
@@ -269,13 +266,11 @@ def start_server():
                 if car_control_char in bt_car_controls.keys():
                     action = bt_car_controls[car_control_char]
                     car_control(action)
-            client_sock.send("Done")
             
-    except OSError:
-        pass
+    except OSError as error:
+        print("Problem with bluetooth server: " + error)
 
-    print("Disconnected.")
-
+    print("Disconnecting")
     client_sock.close()
     server_sock.close()
     print("All done.")
@@ -286,6 +281,8 @@ def start_client():
     print("Starting bluetooth Client...")
     did_connect = False
     num_retries = 0
+    
+    # Try to find UUID service and repear 10 times
     while (not did_connect) and (num_retries < 10):
         print("Client connection attempt number {}...".format(num_retries))
         service_matches = bluetooth.find_service(uuid=uuid, address=None)
@@ -298,6 +295,7 @@ def start_client():
             print("Couldn't find the SampleServer service.")
             sys.exit(0)
 
+    # Get extract parameters from service
     first_match = service_matches[0]
     port = first_match["port"]
     name = first_match["name"]
@@ -335,12 +333,6 @@ def start_client():
 
 
 if __name__ == "__main__":
-
-    cap = cv2.VideoCapture()
-
-    # Camera selected then up the video capture from the camera 
-    if camera_on :
-        cap = cv2.VideoCapture(0)
 
     # If bluetooth selected then intiate server and client functions in respective threads
     if use_bluetooth :
@@ -382,15 +374,10 @@ if __name__ == "__main__":
                     client.sendall(response)
             except Exception as e: 
                 print(e)
+                
+            finally :
                 print("Closing socket")
                 client.close()
-                s.close() 
+                s.close()
                 print ("Socket closed")
 
-
-            finally :
-                client.close()
-                s.close() 
-
-    if cap.isOpened :
-        cap.release()
