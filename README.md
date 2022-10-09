@@ -1,3 +1,7 @@
+## Note for CS437 Instructors:
+Link to this repo in UIUC GitLab for grading: https://gitlab.engr.illinois.edu/moulton61/cs437-lab2.
+Repo is private and relevant instructors have been given Reporter access.
+
 Adapted from https://github.com/mccaesar/iot-labs
 
 Explaination of Electron application files:
