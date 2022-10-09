@@ -28,11 +28,12 @@ function receive_data(data){
     var json_d=JSON.parse(data)
     document.getElementById("CPU_temp").innerHTML = json_d.cpu_temperature+" degrees";
     document.getElementById("PI_temperature").innerHTML = json_d.gpu_temperature +" degrees";
-    document.getElementById("battery").innerHTML = json_d.battery+" %";
-    document.getElementById("ram").innerHTML = json_d.ram;
+    document.getElementById("battery").innerHTML = json_d.battery+" V";
+    document.getElementById("distance").innerHTML = json_d.distance+ " cm";
     document.getElementById("usage").innerHTML = json_d.cpu_usage+ " %";
     document.getElementById("direction").innerHTML = json_d.direction;
-    document.getElementById("speed").innerHTML = json_d.speed+ " m/h";
+    document.getElementById("speed").innerHTML = json_d.speed+ " cm/s";
     
 }
-     
+
+
